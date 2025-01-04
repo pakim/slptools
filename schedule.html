@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Schedule</title>
+    <link rel="stylesheet" href="./schedule.css" />
+  </head>
+  <body>
+    <div class="header">Schedule</div>
+    <div class="buttons">
+      <button class="add">Add</button>
+    </div>
+    <div class="schedule-container">
+      <div class="time-labels">
+        <div class="blank"></div>
+      </div>
+    </div>
+
+    <div class="modal" id="modal">
+      <div class="modal-content">
+        <span class="close" id="close">&times;</span>
+        <h2>Add Session</h2>
+        
+        <!-- Content for Session -->
+        <div id="sessionFields">
+          <div class="options">
+            <label for="dayOptions">Select Day:</label>
+            <select id="dayOptions">
+              <option value="Monday">Monday</option>
+              <option value="Tuesday">Tuesday</option>
+              <option value="Wednesday">Wednesday</option>
+              <option value="Thursday">Thursday</option>
+              <option value="Friday">Friday</option>
+            </select>
+          </div>
+          <label for="startTime">Start Time:</label>
+          <input type="text" id="startTime" name="startTime" />
+          <label for="sessionLength">Session Length (min):</label>
+          <input type="number" id="sessionLength" name="sessionLength" />
+
+          <label for="roomNumber">Room Number:</label>
+          <input type="text" id="roomNumber" name="roomNumber" placeholder="Room Number" />
+
+          <label for="teacher">Teacher:</label>
+          <input type="text" id="teacher" name="teacher" placeholder="Teacher's Name" />
+
+          <label for="students">Students:</label>
+          <div id="studentFields">
+            <input type="text" class="student" name="students[]" placeholder="Student's Name" />
+          </div>
+          <button type="button" id="addStudent">Add Another Student</button>
+          <button type="submit" id="save-button">Save</button>
+        </div>
+
+        <!-- Content for Event -->
+        <!-- <div id="eventFields" class="hidden">
+        <label for="eventStartTime">Start Time:</label>
+        <input type="time" id="eventStartTime" name="eventStartTime" step="60">
+        <label for="eventEndTime">End Time:</label>
+        <input type="time" id="eventEndTime" name="eventEndTime" step="60">
+
+        <label for="eventName">Event Name:</label>
+        <input type="text" id="eventName" name="eventName" placeholder="Event Name">
+      </div> -->
+      </div>
+    </div>
+    <script src="schedule.js"></script>
+  </body>
+</html>

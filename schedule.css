@@ -1,0 +1,215 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+}
+
+.header {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 24px;
+}
+
+.buttons {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.add {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.schedule-container {
+  display: inline-block;
+  border: 2px solid lightgray;
+  margin-top: 20px;
+  overflow: auto;
+}
+
+/* CSS for the time row */
+.time-labels {
+  display: flex;
+}
+
+.time {
+  height: 50px;
+  width: 228px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 1px solid lightgray;
+  border-bottom: 2px solid lightgray;
+}
+
+.blank {
+  width: 40px;
+  border-bottom: 2px solid lightgray;
+}
+
+.hour {
+  font-size: 18px;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+.minutes {
+  display: flex;
+  font-size: 11px;
+}
+
+.minute {
+  width: 19px;
+  text-align: center;
+}
+
+.first-minute {
+  margin-left: 9.5px;
+}
+
+/* CSS for the day rows */
+.day-container {
+  width: 100%;
+  height: 120px;
+  display: flex;
+  border-bottom: 2px solid lightgray;
+}
+
+.day {
+  width: 40px;
+  border-right: 2px solid lightgray;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.day-text {
+  transform: rotate(-90deg);
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.day-schedule {
+  position: relative;
+  width: 100%;
+  background: repeating-linear-gradient(
+        to right, /* Direction of the gradient */
+        transparent, /* Start with no color */
+        transparent 18px, /* Width of transparent area */
+        lightgray 19px
+      ), 
+      repeating-linear-gradient(
+        to right, 
+        lightgray 0px,
+        transparent 1px, 
+        transparent 226px, /* Interval for black lines */
+        lightgray 227px,
+        lightgray 228px
+      );
+}
+
+/* Modal styles */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Background color with transparency */
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  position: relative;
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 500px;
+  height: 700px;
+  overflow: scroll;
+}
+
+.close {
+  color: #aaa;
+  font-size: 28px;
+  font-weight: bold;
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.options {
+  margin: 10px 0;
+}
+
+input[type="text"],
+input[type="number"] {
+  width: 100%;
+  padding: 8px;
+  margin: 10px 0;
+}
+
+button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+button#addStudent {
+  margin-top: 10px;
+}
+
+button#save-button {
+  display: block;
+}
+
+.student-input {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  justify-content: space-between;
+  width: 100%; /* Ensure the container takes full width */
+}
+
+.student {
+  padding: 5px;
+}
+
+.removeStudent {
+  background-color: transparent;
+  border: none;
+  color: red;
+  font-size: 20px;
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  margin: 0;
+}
+
+.removeStudent:hover {
+  color: darkred;
+}
+
+.session-container {
+  position: absolute;
+  border-radius: 5px;
+  border: 1px solid #007bff;
+  cursor: pointer;
+}
