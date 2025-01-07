@@ -32,7 +32,7 @@ body {
   overflow: auto;
 }
 
-/* CSS for the time row */
+/* CSS for the time row (Shows all hour and minute labels) */
 .time-labels {
   display: flex;
 }
@@ -72,7 +72,7 @@ body {
   margin-left: 9.5px;
 }
 
-/* CSS for the day rows */
+/* CSS for the day rows (Monday, Tuesday, Wednesday, Thursday, Friday) */
 .day-container {
   width: 100%;
   height: 120px;
@@ -98,19 +98,26 @@ body {
   position: relative;
   width: 100%;
   background: repeating-linear-gradient(
-        to right, /* Direction of the gradient */
-        transparent, /* Start with no color */
-        transparent 18px, /* Width of transparent area */
-        lightgray 19px
-      ), 
-      repeating-linear-gradient(
-        to right, 
-        lightgray 0px,
-        transparent 1px, 
-        transparent 226px, /* Interval for black lines */
-        lightgray 227px,
-        lightgray 228px
-      );
+      to right,
+      transparent,
+      transparent 18px, /* Transparent for first 18px */
+      lightgray 19px /* Line for 19th px */
+    ),
+    repeating-linear-gradient(
+      to right,
+      lightgray 0px, /* Line for first px */
+      transparent 1px,
+      transparent 226px, /* Transparent until 226px. Spans the length of 1 hour */
+      lightgray 227px, /* Lines for 227 and 228 px. Outcome is 3px line for every hour mark */
+      lightgray 228px
+    );
+}
+
+.session-container {
+  position: absolute;
+  border-radius: 5px;
+  border: 1px solid #007bff;
+  cursor: pointer;
 }
 
 /* Modal styles */
@@ -133,7 +140,7 @@ body {
   padding: 20px;
   border-radius: 10px;
   width: 500px;
-  height: 700px;
+  height: 600px;
   overflow: scroll;
 }
 
@@ -184,7 +191,7 @@ button#save-button {
   align-items: center;
   margin-bottom: 10px;
   justify-content: space-between;
-  width: 100%; /* Ensure the container takes full width */
+  width: 100%;
 }
 
 .student {
@@ -207,9 +214,13 @@ button#save-button {
   color: darkred;
 }
 
-.session-container {
-  position: absolute;
-  border-radius: 5px;
-  border: 1px solid #007bff;
-  cursor: pointer;
+/* Add session modal error styles */
+.hidden {
+  display: none;
+}
+
+.error {
+  color: red;
+  font-size: 14px;
+  font-weight: bold;
 }
