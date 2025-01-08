@@ -9,26 +9,56 @@ body {
 }
 
 .header {
-  text-align: center;
-  margin-top: 20px;
-  font-size: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #333;
+  height: 66px;
+  width: 100%;
+  padding: 0 15px;
+  position: fixed;
 }
 
 .buttons {
+  display: flex;
   text-align: center;
-  margin-top: 10px;
+  align-items: center;
+  gap: 20px;
+}
+
+.links {
+  display: flex;
+  text-align: center;
+  align-items: baseline;
+}
+
+.current {
+  font-size: 30px;
+  color: #007bff;
+  font-weight: bold;
+  text-decoration: none;
+  margin-right: 40px;
+}
+
+.new-page {
+  font-size: 18px;
+  color: #fff;
+  text-decoration: none;
 }
 
 .add {
-  padding: 10px 20px;
-  font-size: 16px;
+  font-size: 20px;
   cursor: pointer;
+  background-color: transparent;
+  color: #4CAF50;
+  border: none;
+  font-weight: bold;
 }
 
 .schedule-container {
   display: inline-block;
   border: 2px solid lightgray;
-  margin-top: 20px;
+  margin-top: 66px;
   overflow: auto;
 }
 
@@ -100,16 +130,16 @@ body {
   background: repeating-linear-gradient(
       to right,
       transparent,
-      transparent 18px, /* Transparent for first 18px */
-      lightgray 19px /* Line for 19th px */
+      transparent 18px,
+      /* Transparent for first 18px */ lightgray 19px /* Line for 19th px */
     ),
     repeating-linear-gradient(
       to right,
-      lightgray 0px, /* Line for first px */
-      transparent 1px,
-      transparent 226px, /* Transparent until 226px. Spans the length of 1 hour */
-      lightgray 227px, /* Lines for 227 and 228 px. Outcome is 3px line for every hour mark */
-      lightgray 228px
+      lightgray 0px,
+      /* Line for first px */ transparent 1px,
+      transparent 226px,
+      /* Transparent until 226px. Spans the length of 1 hour */ lightgray 227px,
+      /* Lines for 227 and 228 px. Outcome is 3px line for every hour mark */ lightgray 228px
     );
 }
 
@@ -117,7 +147,27 @@ body {
   position: absolute;
   border-radius: 5px;
   border: 1px solid #007bff;
+  padding-left: 5px;
+  padding-top: 5px;
   cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.session-container:hover {
+  overflow: auto;
+}
+
+.session-container::-webkit-scrollbar {
+  display: none;
+}
+
+.session-container p {
+  color: white;
+  font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 /* Modal styles */
@@ -172,13 +222,13 @@ input[type="number"] {
   margin: 10px 0;
 }
 
-button {
+button#add-student, button#save-button {
   margin-top: 10px;
   padding: 10px 20px;
   cursor: pointer;
 }
 
-button#addStudent {
+button#add-student {
   margin-top: 10px;
 }
 
@@ -189,7 +239,6 @@ button#save-button {
 .student-input {
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
   justify-content: space-between;
   width: 100%;
 }

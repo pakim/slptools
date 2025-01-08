@@ -6,8 +6,7 @@ module.exports = {
     asar: {
       // Enable ASAR packaging, but keep some files outside
       unpack: [
-        "**/pages/**",  // Keeps everything in the 'someDirectory' folder outside of ASAR
-        "**/*.html",            // Keeps all .json files outside the ASAR
+        "**/data/**",  // Keeps everything in the 'someDirectory' folder outside of ASAR
         "**/*.db"               // Keeps all .db files outside the ASAR
       ]
     }

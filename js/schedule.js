@@ -7,13 +7,20 @@ const minutes = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
  * Database setup and functions.
  */
 const sqlite3 = require("sqlite3").verbose();
+const path = require("path");
+
+// Adjust path for production
+const isDev = true;
+const dbPath = isDev
+  ? path.join(__dirname, "./../data/data.db") // In development
+  : path.join(process.resourcesPath, "./app.asar.unpacked/data/data.db"); // In production
 
 /**
  * Connects to the SQLite database.
  */
 function connectToDatabase() {
   return new Promise((resolve, reject) => {
-    const db = new sqlite3.Database("./data/data.db", err => {
+    const db = new sqlite3.Database(dbPath, err => {
       if (err) {
         reject("Error connecting to the database:", err.message);
       } else {
@@ -67,7 +74,15 @@ function addSession(db, sessionData) {
     `;
 
     // Combine all values for placeholders
-    const values = [selectedDay, startTime, sessionLength, start, end, roomNumber, ...studentValues];
+    const values = [
+      selectedDay,
+      startTime,
+      sessionLength,
+      start,
+      end,
+      roomNumber,
+      ...studentValues,
+    ];
 
     // Execute the query
     db.run(sql, values, err => {
@@ -84,9 +99,6 @@ function addSession(db, sessionData) {
  * Creates and displays session containers onto the schedule.
  */
 async function displaySessions(sessions) {
-  // sessions = await fetchSessions(db);
-  console.log("in displaysessions");
-  console.log(sessions);
   sessions.forEach(session => {
     const startTime = session.start_time;
     const sessionLength = session.session_length;
@@ -120,7 +132,37 @@ async function displaySessions(sessions) {
 
     // Add the session container to the beginning of the day's schedule
     dayContainer.prepend(sessionContainer);
+
+    // Add session info to the container
+    const timeInfo = document.createElement("p");
+    timeInfo.textContent = `${session.start_time} - ${getEndTime(session.end)}`;
+    sessionContainer.appendChild(timeInfo);
+
+    if (session.room_number !== "" && session.room_number !== null) {
+      const roomInfo = document.createElement("p");
+      roomInfo.textContent = `#${session.room_number}`;
+      sessionContainer.appendChild(roomInfo);
+    }
+
+    for (let i = 1; i <= 10; i++) {
+      if (session[`student_${i}`] !== null && session[`student_${i}`] !== "") {
+        const studentInfo = document.createElement("p");
+        studentInfo.textContent = session[`student_${i}`];
+        sessionContainer.appendChild(studentInfo);
+      }
+    }
   });
+}
+
+/**
+ * Function that takes in the end field of a session and converts it to a string.
+ * Ex: (600) -> ("10:00")
+ */
+function getEndTime(end) {
+  const minute = end % 60;
+  const hour = Math.floor(end / 60) % 12;
+
+  return minute === 0 ? `${hour}:${minute}0` : `${hour}:${minute}`;
 }
 
 /**
@@ -189,10 +231,10 @@ function loadScheduleVisual() {
  * Validates user input data when adding a new session.
  */
 function validateSessionInfo(sessions) {
-  console.log(sessions);
   let isValid = true;
-  const startTime = document.getElementById("start-time").value;
+  const startTime = document.getElementById("start-time").value.trim();
   const sessionLength = document.getElementById("session-length").value;
+  const selectedDay = document.getElementById("day-options").value;
 
   // Verify correct startTime format (03:00 or 3:00)
   const timeRegex = /^(0?[1-9]|1[0-2]):([0-5][0-9])$/;
@@ -213,15 +255,18 @@ function validateSessionInfo(sessions) {
   const start = convertTimeToNumber(startTime);
   const end = start + sessionLength;
 
-  // Display error if start and end time overlaps with an existing session's start and end time
+  // Display error if same day and if start and end time overlaps with an existing session's start and end time
   sessions.forEach(session => {
-    if (
-      (session.start > start && session.start < end) ||
-      (session.end > start && session.end < end)
-    ) {
-      const errorText = document.getElementById("conflict-error");
-      errorText.classList.remove("hidden");
-      isValid = false;
+    if (session.day === selectedDay) {
+      if (
+        (session.start > start && session.start < end) ||
+        (session.end > start && session.end < end) ||
+        (start >= session.start && end <= session.end)
+      ) {
+        const errorText = document.getElementById("conflict-error");
+        errorText.classList.remove("hidden");
+        isValid = false;
+      }
     }
   });
 
@@ -253,8 +298,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   try {
     db = await connectToDatabase();
     sessions = await fetchSessions(db);
-    displaySessions(sessions);
     console.log("Fetched data:");
+    displaySessions(sessions);
   } catch (error) {
     console.error(error);
   }
@@ -269,8 +314,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const closeButton = document.getElementById("close");
 
   // Get the Student field and add button
-  const studentFields = document.getElementById("studentFields");
-  const addStudentButton = document.getElementById("addStudent");
+  const studentFields = document.getElementById("student-fields");
+  const addStudentButton = document.getElementById("add-student");
 
   const saveButton = document.getElementById("save-button"); // Save button
 
@@ -289,6 +334,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Add Student button event listener. Adds input for another student
   addStudentButton.addEventListener("click", () => {
+    // Prevent modal from having more than 10 student input fields
+    if (studentFields.children.length >= 10) {
+      return;
+    }
+
     const newStudentInput = document.createElement("div");
     newStudentInput.classList.add("student-input");
 
@@ -300,7 +350,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     studentInput.placeholder = "Student's Name";
 
     const removeButton = document.createElement("button");
-    removeButton.textContent = "X";
+    removeButton.innerHTML = "&times;";
     removeButton.classList.add("removeStudent");
 
     // Prevent removal of the first student input
@@ -316,13 +366,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   // Save button event listener
-  saveButton.addEventListener("click", () => {
+  saveButton.addEventListener("click", async () => {
     if (validateSessionInfo(sessions)) {
       // Get modal fields
       const selectedDay = document.getElementById("day-options").value;
-      const startTime = document.getElementById("start-time").value;
+      const startTime = document.getElementById("start-time").value.trim();
       const sessionLength = parseInt(document.getElementById("session-length").value);
-      const roomNumber = document.getElementById("room-number").value;
+      const roomNumber = document.getElementById("room-number").value.trim();
       const students = document.querySelectorAll(".student");
 
       // Retrieve all non-empty student input values
@@ -344,16 +394,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       };
 
       try {
-        addSession(db, sessionData);
+        const message = await addSession(db, sessionData);
+        console.log(message);
       } catch (error) {
         console.error(error);
       }
 
-      // Close the modal
-      modal.style.display = "none";
-      document.querySelectorAll(".error").forEach(element => {
-        element.classList.add("hidden");
-      });
+      // Reload the page
+      window.location.reload();
     }
   });
 });
