@@ -3,97 +3,156 @@ const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 const hours = [8, 9, 10, 11, 12, 1, 2];
 const minutes = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
 
-/**
- * Database setup and functions.
- */
-const sqlite3 = require("sqlite3").verbose();
-const path = require("path");
+import {
+  connectToDatabase,
+  fetchSessions,
+  fetchStudents,
+  addSession,
+  addStudent,
+} from "./database.js";
+// /**
+//  * Database setup and functions.
+//  */
+// const sqlite3 = require("sqlite3").verbose();
+// const path = require("path");
 
-// Adjust path for production
-const isDev = true;
-const dbPath = isDev
-  ? path.join(__dirname, "./../data/data.db") // In development
-  : path.join(process.resourcesPath, "./app.asar.unpacked/data/data.db"); // In production
+// /**
+//  * Connects to the SQLite database.
+//  */
+// function connectToDatabase() {
+//   // Adjust path for production
+//   const isDev = true;
+//   const dbPath = isDev
+//     ? path.join(__dirname, "./../data/data.db") // In development
+//     : path.join(process.resourcesPath, "./app.asar.unpacked/data/data.db"); // In production
 
-/**
- * Connects to the SQLite database.
- */
-function connectToDatabase() {
-  return new Promise((resolve, reject) => {
-    const db = new sqlite3.Database(dbPath, err => {
-      if (err) {
-        reject("Error connecting to the database:", err.message);
-      } else {
-        console.log("Connected to the database.");
-        resolve(db);
-      }
-    });
-  });
-}
+//   return new Promise((resolve, reject) => {
+//     const db = new sqlite3.Database(dbPath, err => {
+//       if (err) {
+//         reject("Error connecting to the database:", err.message);
+//       } else {
+//         console.log("Connected to the database.");
+//         resolve(db);
+//       }
+//     });
+//   });
+// }
 
-/**
- * Fetches all sessions from the database.
- */
-function fetchSessions(db) {
-  return new Promise((resolve, reject) => {
-    db.all("SELECT * from sessions", (err, rows) => {
-      if (err) {
-        reject("Error fetching data:", err.message);
-      } else {
-        resolve(rows);
-      }
-    });
-  });
-}
+// /**
+//  * Fetches all sessions from the database.
+//  */
+// function fetchSessions(db) {
+//   return new Promise((resolve, reject) => {
+//     db.all("SELECT * from sessions", (err, rows) => {
+//       if (err) {
+//         reject("Error fetching data:", err.message);
+//       } else {
+//         resolve(rows);
+//       }
+//     });
+//   });
+// }
 
-/**
- * Adds a new session to the database.
- */
-function addSession(db, sessionData) {
-  return new Promise((resolve, reject) => {
-    const {
-      selectedDay,
-      startTime,
-      sessionLength,
-      start,
-      end,
-      roomNumber,
-      studentValues = [], // Default to an empty array if no students are provided
-    } = sessionData;
+// /**
+//  * Fetches all students from the database.
+//  */
+// function fetchStudents(db) {
+//   return new Promise((resolve, reject) => {
+//     db.all("SELECT * from students", (err, rows) => {
+//       if (err) {
+//         reject("Error fetching data:", err.message);
+//       } else {
+//         resolve(rows);
+//       }
+//     });
+//   });
+// }
 
-    // Dynamically build the columns and placeholders for the students
-    const studentColumns = studentValues.map((_, index) => `student_${index + 1}`).join(", ");
-    const studentPlaceholders = studentValues.map(() => "?").join(", ");
+// /**
+//  * Adds a new session to the database.
+//  */
+// function addSession(db, sessionData) {
+//   return new Promise((resolve, reject) => {
+//     const {
+//       selectedDay,
+//       startTime,
+//       sessionLength,
+//       start,
+//       end,
+//       roomNumber,
+//       studentValues = [], // Default to an empty array if no students are provided
+//     } = sessionData;
 
-    // Construct the SQL query dynamically
-    const sql = `
-      INSERT INTO sessions (day, start_time, session_length, start, end, room_number${
-        studentColumns ? `, ${studentColumns}` : ""
-      }) 
-      VALUES (?, ?, ?, ?, ?, ?${studentPlaceholders ? `, ${studentPlaceholders}` : ""})
-    `;
+//     // Dynamically build the columns and placeholders for the students
+//     const studentColumns = studentValues.map((_, index) => `student_${index + 1}`).join(", ");
+//     const studentPlaceholders = studentValues.map(() => "?").join(", ");
 
-    // Combine all values for placeholders
-    const values = [
-      selectedDay,
-      startTime,
-      sessionLength,
-      start,
-      end,
-      roomNumber,
-      ...studentValues,
-    ];
+//     // Construct the SQL query dynamically
+//     const sql = `
+//       INSERT INTO sessions (day, start_time, session_length, start, end, room_number${
+//         studentColumns ? `, ${studentColumns}` : ""
+//       })
+//       VALUES (?, ?, ?, ?, ?, ?${studentPlaceholders ? `, ${studentPlaceholders}` : ""})
+//     `;
 
-    // Execute the query
-    db.run(sql, values, err => {
-      if (err) {
-        reject("Error inserting data:", err.message);
-      } else {
-        resolve("Insert session successful");
-      }
-    });
-  });
-}
+//     // Combine all values for placeholders
+//     const values = [
+//       selectedDay,
+//       startTime,
+//       sessionLength,
+//       start,
+//       end,
+//       roomNumber,
+//       ...studentValues,
+//     ];
+
+//     // Execute the query
+//     db.run(sql, values, err => {
+//       if (err) {
+//         reject("Error inserting data:", err.message);
+//       } else {
+//         resolve("Insert session successful");
+//       }
+//     });
+//   });
+// }
+
+// /**
+//  * Adds a new student to the database.
+//  */
+// function addStudent(db, studentData) {
+//   return new Promise((resolve, reject) => {
+//     const {
+//       studentName,
+//       iepDate,
+//       grade,
+//       teacher,
+//       goalValues = [], // Default to an empty array if no students are provided
+//     } = studentData;
+
+//     // Dynamically build the columns and placeholders for the students
+//     const goalColumns = goalValues.map((_, index) => `goal_${index + 1}`).join(", ");
+//     const goalPlaceholders = goalValues.map(() => "?").join(", ");
+
+//     // Construct the SQL query dynamically
+//     const sql = `
+//       INSERT INTO students (name, iep, grade, teacher${goalColumns ? `, ${goalColumns}` : ""})
+//       VALUES (?, ?, ?, ?${goalPlaceholders ? `, ${goalPlaceholders}` : ""})
+//     `;
+
+//     // Combine all values for placeholders
+//     const values = [studentName, iepDate, grade, teacher, ...goalValues];
+
+//     // Execute the query
+//     db.run(sql, values, err => {
+//       if (err) {
+//         reject("Error inserting data:", err.message);
+//       } else {
+//         resolve("Insert student successful");
+//       }
+//     });
+//   });
+// }
 
 /**
  * Creates and displays session containers onto the schedule.
@@ -122,6 +181,7 @@ async function displaySessions(sessions) {
     // Create the session container
     const sessionContainer = document.createElement("div");
     sessionContainer.classList.add("session-container");
+    sessionContainer.dataset.id = session.id;
     sessionContainer.style.width = `${sessionWidth}px`;
     sessionContainer.style.height = "118px";
     sessionContainer.style.backgroundColor = "rgb(0, 123, 255)"; // Light blue background
@@ -233,7 +293,7 @@ function loadScheduleVisual() {
 function validateSessionInfo(sessions) {
   let isValid = true;
   const startTime = document.getElementById("start-time").value.trim();
-  const sessionLength = document.getElementById("session-length").value;
+  const sessionLength = parseInt(document.getElementById("session-length").value);
   const selectedDay = document.getElementById("day-options").value;
 
   // Verify correct startTime format (03:00 or 3:00)
@@ -287,9 +347,31 @@ function convertTimeToNumber(time) {
   return total;
 }
 
+function checkStudentInDatabase(studentList, studentValues) {
+  const newStudents = [];
+
+  studentValues.forEach(student => {
+    let inDatabase = false;
+    studentList.forEach(databaseStudent => {
+      if (student === databaseStudent.name) {
+        inDatabase = true;
+      }
+    });
+    if (!inDatabase) {
+      newStudents.push(student);
+    }
+  });
+
+  return newStudents;
+}
+
+/**
+ * Run visual and database function when the DOM is loaded.
+ */
 document.addEventListener("DOMContentLoaded", async () => {
   let sessions;
   let db;
+  let studentList;
 
   // Dynamically add schedule elements (time row and days)
   loadScheduleVisual();
@@ -298,7 +380,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   try {
     db = await connectToDatabase();
     sessions = await fetchSessions(db);
-    console.log("Fetched data:");
+    studentList = await fetchStudents(db);
+    console.log("Fetched data");
     displaySessions(sessions);
   } catch (error) {
     console.error(error);
@@ -394,8 +477,23 @@ document.addEventListener("DOMContentLoaded", async () => {
       };
 
       try {
-        const message = await addSession(db, sessionData);
-        console.log(message);
+        const sessionMessage = await addSession(db, sessionData);
+
+        const newStudents = checkStudentInDatabase(studentList, studentValues);
+
+        for (const studentName of newStudents) {
+          const studentData = {
+            studentName,
+            iepDate: "",
+            grade: "",
+            teacher: "",
+            goalValues: [],
+          };
+          const studentMessage = await addStudent(db, studentData);
+          console.log(studentMessage);
+        }
+
+        console.log(sessionMessage);
       } catch (error) {
         console.error(error);
       }
