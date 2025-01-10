@@ -46,7 +46,7 @@ export function fetchSessions(db) {
  */
 export function fetchStudents(db) {
   return new Promise((resolve, reject) => {
-    db.all("SELECT * from students", (err, rows) => {
+    db.all("SELECT * from students ORDER BY name ASC", (err, rows) => {
       if (err) {
         reject("Error fetching data:", err.message);
       } else {
@@ -114,6 +114,7 @@ export function addStudent(db, studentData) {
       studentName,
       iepDate,
       grade,
+      gender,
       teacher,
       goalValues = [], // Default to an empty array if no students are provided
     } = studentData;
@@ -124,12 +125,12 @@ export function addStudent(db, studentData) {
 
     // Construct the SQL query dynamically
     const sql = `
-      INSERT INTO students (name, iep, grade, teacher${goalColumns ? `, ${goalColumns}` : ""}) 
-      VALUES (?, ?, ?, ?${goalPlaceholders ? `, ${goalPlaceholders}` : ""})
+      INSERT INTO students (name, iep, grade, gender, teacher${goalColumns ? `, ${goalColumns}` : ""}) 
+      VALUES (?, ?, ?, ?, ?${goalPlaceholders ? `, ${goalPlaceholders}` : ""})
     `;
 
     // Combine all values for placeholders
-    const values = [studentName, iepDate, grade, teacher, ...goalValues];
+    const values = [studentName, iepDate, grade, gender, teacher, ...goalValues];
 
     // Execute the query
     db.run(sql, values, err => {

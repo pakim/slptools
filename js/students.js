@@ -1,89 +1,93 @@
-import {
-  connectToDatabase,
-  fetchStudents,
-  addStudent,
-} from "./database.js";
+import { connectToDatabase, fetchStudents, addStudent } from "./database.js";
 
 /**
- * Database setup and functions.
+ * Creates student containers and displays all students in the database.
  */
-// const sqlite3 = require("sqlite3").verbose();
-// const path = require("path");
+function displayStudents(students) {
+  const listContainer = document.querySelector(".student-list");
 
-// // Adjust path for production
-// const isDev = true;
-// const dbPath = isDev
-//   ? path.join(__dirname, "./../data/data.db") // In development
-//   : path.join(process.resourcesPath, "./app.asar.unpacked/data/data.db"); // In production
+  students.forEach(student => {
+    const studentContainer = document.createElement("div");
+    studentContainer.classList.add("student-container");
+    studentContainer.dataset.id = student.id;
 
-// /**
-//  * Connects to the SQLite database.
-//  */
-// function connectToDatabase() {
-//   return new Promise((resolve, reject) => {
-//     const db = new sqlite3.Database(dbPath, err => {
-//       if (err) {
-//         reject("Error connecting to the database:", err.message);
-//       } else {
-//         console.log("Connected to the database.");
-//         resolve(db);
-//       }
-//     });
-//   });
-// }
+    const containerTop = document.createElement("div");
+    containerTop.classList.add("student-row-top");
 
-// /**
-//  * Fetches all students from the database.
-//  */
-// function fetchStudents(db) {
-//   return new Promise((resolve, reject) => {
-//     db.all("SELECT * from students", (err, rows) => {
-//       if (err) {
-//         reject("Error fetching data:", err.message);
-//       } else {
-//         resolve(rows);
-//       }
-//     });
-//   });
-// }
+    // Create divs for student details
+    const nameContainer = document.createElement("div");
+    nameContainer.textContent = student.name;
+    const iepContainer = document.createElement("div");
+    iepContainer.textContent = student.iep;
+    const gradeContainer = document.createElement("div");
+    gradeContainer.textContent = student.grade;
+    const genderContainer = document.createElement("div");
+    genderContainer.textContent = student.gender;
+    const teacherContainer = document.createElement("div");
+    teacherContainer.textContent = student.teacher;
+    const buttonContainer = document.createElement("div");
+    buttonContainer.classList.add("button-container");
 
-// /**
-//  * Adds a new student to the database.
-//  */
-// function addStudent(db, studentData) {
-//   return new Promise((resolve, reject) => {
-//     const {
-//       studentName,
-//       iepDate,
-//       grade,
-//       teacher,
-//       goalValues = [], // Default to an empty array if no students are provided
-//     } = studentData;
+    // Create buttons to edit student and show goals
+    const editButton = document.createElement("button");
+    editButton.textContent = "Edit";
+    const goalsButton = document.createElement("button");
+    goalsButton.textContent = "Show Goals";
+    buttonContainer.appendChild(editButton);
+    buttonContainer.appendChild(goalsButton);
 
-//     // Dynamically build the columns and placeholders for the students
-//     const goalColumns = goalValues.map((_, index) => `goal_${index + 1}`).join(", ");
-//     const goalPlaceholders = goalValues.map(() => "?").join(", ");
+    containerTop.appendChild(nameContainer);
+    containerTop.appendChild(iepContainer);
+    containerTop.appendChild(gradeContainer);
+    containerTop.appendChild(genderContainer);
+    containerTop.appendChild(teacherContainer);
+    containerTop.appendChild(buttonContainer);
 
-//     // Construct the SQL query dynamically
-//     const sql = `
-//       INSERT INTO students (name, iep, grade, teacher${goalColumns ? `, ${goalColumns}` : ""}) 
-//       VALUES (?, ?, ?, ?${goalPlaceholders ? `, ${goalPlaceholders}` : ""})
-//     `;
+    // Create divs to contain student goals
+    const containerBottom = document.createElement("div");
+    containerBottom.classList.add("student-row-bottom");
+    containerBottom.classList.add("hidden");
+    const bottomLabel = document.createElement("div");
+    bottomLabel.classList.add("goal-label");
+    bottomLabel.textContent = "Goals:";
+    const bottomGoals = document.createElement("div");
+    bottomGoals.classList.add("goal-list");
 
-//     // Combine all values for placeholders
-//     const values = [studentName, iepDate, grade, teacher, ...goalValues];
+    containerBottom.appendChild(bottomLabel);
+    containerBottom.appendChild(bottomGoals);
 
-//     // Execute the query
-//     db.run(sql, values, err => {
-//       if (err) {
-//         reject("Error inserting data:", err.message);
-//       } else {
-//         resolve("Insert student successful");
-//       }
-//     });
-//   });
-// }
+    // Create textareas for goals
+    for (let i = 1; i <= 10; i++) {
+      if (student[`goal_${i}`] !== null && student[`goal_${i}`] !== "") {
+        const goalInfo = document.createElement("textarea");
+        goalInfo.classList.add("student-goal");
+        goalInfo.value = student[`goal_${i}`];
+        goalInfo.rows = "5";
+        bottomGoals.appendChild(goalInfo);
+      }
+    }
 
+    studentContainer.appendChild(containerTop);
+    studentContainer.appendChild(containerBottom);
+
+    listContainer.appendChild(studentContainer);
+
+    // Add event listener to the Show Goals button
+    goalsButton.addEventListener("click", () => {
+      if (goalsButton.textContent === "Show Goals") {
+        goalsButton.textContent = "Hide Goals";
+        containerBottom.classList.remove("hidden");
+      } else if (goalsButton.textContent === "Hide Goals") {
+        goalsButton.textContent = "Show Goals";
+        containerBottom.classList.add("hidden");
+      }
+    });
+  });
+}
+
+/**
+ * Run visual and database functions when the DOM is loaded.
+ */
 document.addEventListener("DOMContentLoaded", async () => {
   let db;
   let students;
@@ -93,6 +97,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     db = await connectToDatabase();
     students = await fetchStudents(db);
     console.log("Fetched data");
+    displayStudents(students);
   } catch (error) {
     console.error(error);
   }
@@ -168,6 +173,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Get modal fields
       const iepDate = document.getElementById("iep").value.trim();
       const grade = document.getElementById("grade").value.trim();
+      const gender = document.getElementById("gender").value.trim();
       const teacher = document.getElementById("teacher").value.trim();
       const goals = document.querySelectorAll(".goal");
 
@@ -180,6 +186,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         studentName,
         iepDate,
         grade,
+        gender,
         teacher,
         goalValues,
       };

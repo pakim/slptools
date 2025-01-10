@@ -18,6 +18,8 @@ body {
   width: 100%;
   padding: 0 15px;
   position: fixed;
+  top: 0;
+  left: 0;
 }
 
 .buttons {
@@ -51,9 +53,85 @@ body {
   font-size: 20px;
   cursor: pointer;
   background-color: transparent;
-  color: #4CAF50;
+  color: #4caf50;
   border: none;
   font-weight: bold;
+}
+
+/* Student list styles */
+.student-list {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-top: 66px;
+}
+
+
+.header-row,
+.student-row-top {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 2fr 1fr;
+  gap: 10px;
+  background-color: #f2f2f2;
+  padding: 10px;
+}
+
+.header-row {
+  font-weight: bold;
+  border-bottom: 2px solid #ccc;
+  position: sticky;
+  top: 66px;
+  left: 0;
+}
+
+.student-container {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid #ccc;
+}
+
+.student-row-top div, .header-row div {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.student-row-bottom {
+  padding: 10px;
+  background-color: #e9e9e9;
+  display: flex;
+  flex-direction: column;
+}
+
+.goal-list {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+}
+
+.student-goal {
+  width: 200px;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  resize: none;
+  border: 1px solid lightgray;
+  border-radius: 5px;
+}
+
+.student-container:last-child {
+  border-bottom: none;
+}
+
+.student-row-top .button-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.student-row-top .button-container button {
+  padding: 5px;
+  cursor: pointer;
 }
 
 /* Add Student modal styles */
@@ -101,13 +179,15 @@ body {
   margin-top: 20px;
 }
 
-input[type="text"], textarea {
+input[type="text"],
+textarea {
   width: 100%;
   padding: 8px;
   margin: 10px 0;
 }
 
-button#add-goal, button#save-button {
+button#add-goal,
+button#save-button {
   margin-top: 10px;
   padding: 10px 20px;
   cursor: pointer;

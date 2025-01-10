@@ -29,13 +29,14 @@ This project allows you to schedule and manage therapy sessions. Electron deskto
 
 ## Todo
 
-- Finish schedule
-  - Add details to the session containers (student names, etc)
-  - Add way to store session data to a file (probably json)
-  - Have the js search this file first to populate the schedule
-  - Add session details page which will contain more information such as student goals and lesson plans
-- Add page for student details
+- Finish schedule page
+  - Add ability to update and delete sessions
+- Finish students page
+  - Add ability to update and delete students
+  - Add more fields to student data table?
+    - current/past student
 - Add page for attendance
 - Add page for lesson plans
+- Add page for session notes
 
 ---
