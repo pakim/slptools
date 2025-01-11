@@ -14,7 +14,7 @@ import {
 /**
  * Creates and displays session containers onto the schedule.
  */
-async function displaySessions(sessions) {
+async function displaySessions(db, sessions, studentList) {
   sessions.forEach(session => {
     const startTime = session.start_time;
     const sessionLength = session.session_length;
@@ -61,13 +61,65 @@ async function displaySessions(sessions) {
       sessionContainer.appendChild(roomInfo);
     }
 
+    let numStudents = 0;
     for (let i = 1; i <= 10; i++) {
       if (session[`student_${i}`] !== null && session[`student_${i}`] !== "") {
         const studentInfo = document.createElement("p");
         studentInfo.textContent = session[`student_${i}`];
         sessionContainer.appendChild(studentInfo);
+        numStudents++;
       }
     }
+
+    // Add eventlistener for when session is clicked. Displays modal with session info
+    sessionContainer.addEventListener("click", () => {
+      const selectedDay = document.getElementById("day-options");
+      const startTime = document.getElementById("start-time");
+      const sessionLength = document.getElementById("session-length");
+      const roomNumber = document.getElementById("room-number");
+      const studentFields = document.getElementById("student-fields");
+
+      // Show modal
+      openModal(db, sessions, studentList, session.id);
+      selectedDay.value = session.day;
+      startTime.value = session.start_time;
+      sessionLength.value = parseInt(session.session_length);
+      roomNumber.value = session.room_number;
+
+      for (let i = 1; i <= numStudents; i++) {
+        if (session[`student_${i}`] !== null && session[`student_${i}`] !== "") {
+          if (i === 1) {
+            const firstStudentInput = document.querySelector(".student");
+            firstStudentInput.value = session["student_1"];
+          } else {
+            // Create more input fields for sessions with multiple students
+            const newStudentInput = document.createElement("div");
+            newStudentInput.classList.add("student-input");
+
+            // Create input and remove button
+            const studentInput = document.createElement("input");
+            studentInput.type = "text";
+            studentInput.classList.add("student");
+            studentInput.name = "students[]";
+            studentInput.placeholder = "Student's Name";
+            studentInput.value = session[`student_${i}`];
+
+            const removeButton = document.createElement("button");
+            removeButton.innerHTML = "&times;";
+            removeButton.classList.add("removeStudent");
+
+            // Remove button event listener
+            removeButton.addEventListener("click", () => {
+              studentFields.removeChild(newStudentInput);
+            });
+
+            newStudentInput.appendChild(studentInput);
+            newStudentInput.appendChild(removeButton);
+            studentFields.appendChild(newStudentInput);
+          }
+        }
+      }
+    });
   });
 }
 
@@ -78,7 +130,7 @@ async function displaySessions(sessions) {
 function getEndTime(end) {
   const minute = end % 60;
   let hour = Math.floor(end / 60) % 12;
-  if(hour === 0) {
+  if (hour === 0) {
     hour = 12;
   }
 
@@ -225,6 +277,97 @@ function checkStudentInDatabase(studentList, studentValues) {
   return newStudents;
 }
 
+async function saveButtonClick(db, sessions, studentList, id) {
+  if (validateSessionInfo(sessions)) {
+    // Get modal fields
+    const selectedDay = document.getElementById("day-options").value;
+    const startTime = document.getElementById("start-time").value.trim();
+    const sessionLength = parseInt(document.getElementById("session-length").value);
+    const roomNumber = document.getElementById("room-number").value.trim();
+    const students = document.querySelectorAll(".student");
+
+    // Retrieve all non-empty student input values
+    const studentValues = Array.from(students)
+      .map(student => student.value.trim()) // Get the trimmed value of each input
+      .filter(value => value !== ""); // Keep only non-empty strings
+
+    const start = convertTimeToNumber(startTime);
+    const end = start + sessionLength;
+
+    // Create session object to send to addSession function
+    const sessionData = {
+      selectedDay,
+      startTime,
+      sessionLength,
+      start,
+      end,
+      roomNumber,
+      studentValues,
+    };
+
+    try {
+      // If action is add then insert new session into table. If action is edit then update session in the table.
+      if (id === 0) {
+        const sessionMessage = await addSession(db, sessionData);
+        console.log(sessionMessage);
+      } else if (id > 0) {
+      }
+
+      // Check if students in the new session are in the students table in the database
+      const newStudents = checkStudentInDatabase(studentList, studentValues);
+
+      // Add new students to the students table in the database
+      for (const studentName of newStudents) {
+        const studentData = {
+          studentName,
+          iepDate: "",
+          grade: "",
+          gender: "",
+          teacher: "",
+          goalValues: [],
+        };
+        const studentMessage = await addStudent(db, studentData);
+        console.log(studentMessage);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+
+    // Reload the page
+    window.location.reload();
+  }
+}
+
+/**
+ * Displays the add/edit session modal.
+ */
+function openModal(db, sessions, studentList, id = 0) {
+  // Get the modal
+  const modal = document.getElementById("modal");
+
+  // Change modal title to Edit Session when directed by clicking on session container
+  // Change modal title to Add Session when directed by clicking on Add button
+  const modalTitle = document.querySelector(".modal h2");
+
+  if (id === 0) {
+    modalTitle.textContent = "Add Session";
+  } else {
+    modalTitle.textContent = "Edit Session";
+  }
+
+  // Display the modal by changing display from hidden to flex
+  modal.style.display = "flex";
+
+  // Get the Student field and add button
+  const saveButton = document.getElementById("save-button"); // Save button
+
+  // Set save button click to function. Cannot use eventlistener since eventlistener will be
+  // added everytime modal is opened.
+  saveButton.onclick = () => {
+    saveButtonClick(db, sessions, studentList, id);
+  };
+}
+
 /**
  * Run visual and database functions when the DOM is loaded.
  */
@@ -242,37 +385,46 @@ document.addEventListener("DOMContentLoaded", async () => {
     sessions = await fetchSessions(db);
     studentList = await fetchStudents(db);
     console.log("Fetched data");
-    displaySessions(sessions);
+    displaySessions(db, sessions, studentList);
   } catch (error) {
     console.error(error);
   }
 
-  // Get the modal
-  const modal = document.getElementById("modal");
-
-  // Get the button that opens the modal
+  // Get the button elements and student fields container
   const addButton = document.querySelector(".add");
-
-  // Get the <span> element that closes the modal
   const closeButton = document.getElementById("close");
-
-  // Get the Student field and add button
   const studentFields = document.getElementById("student-fields");
   const addStudentButton = document.getElementById("add-student");
 
-  const saveButton = document.getElementById("save-button"); // Save button
-
   // Add session button event listener
-  addButton.addEventListener("click", () => {
-    modal.style.display = "flex";
-  });
+  addButton.addEventListener("click", () => openModal(db, sessions, studentList));
 
   // Modal close button event listener
   closeButton.addEventListener("click", () => {
+    // Hide modal
     modal.style.display = "none";
+
+    // Hide errors
     document.querySelectorAll(".error").forEach(element => {
       element.classList.add("hidden");
     });
+
+    // Reset input fields
+    document.querySelectorAll(".modal input").forEach(element => {
+      element.value = "";
+    });
+
+    // Reset select element value
+    const dayOptions = document.getElementById("day-options");
+    dayOptions.value = "Monday";
+
+    // Remove extra student input fields
+    const extraStudentInput = document.querySelectorAll(".student-input");
+    if (extraStudentInput.length !== 0) {
+      extraStudentInput.forEach(input => {
+        studentFields.removeChild(input);
+      });
+    }
   });
 
   // Add Student button event listener. Adds input for another student
@@ -296,71 +448,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     removeButton.innerHTML = "&times;";
     removeButton.classList.add("removeStudent");
 
-    // Prevent removal of the first student input
+    // Remove button event listener
     removeButton.addEventListener("click", () => {
-      if (studentFields.children.length > 1) {
-        studentFields.removeChild(newStudentInput);
-      }
+      studentFields.removeChild(newStudentInput);
     });
 
     newStudentInput.appendChild(studentInput);
     newStudentInput.appendChild(removeButton);
     studentFields.appendChild(newStudentInput);
-  });
-
-  // Save button event listener
-  saveButton.addEventListener("click", async () => {
-    if (validateSessionInfo(sessions)) {
-      // Get modal fields
-      const selectedDay = document.getElementById("day-options").value;
-      const startTime = document.getElementById("start-time").value.trim();
-      const sessionLength = parseInt(document.getElementById("session-length").value);
-      const roomNumber = document.getElementById("room-number").value.trim();
-      const students = document.querySelectorAll(".student");
-
-      // Retrieve all non-empty student input values
-      const studentValues = Array.from(students)
-        .map(student => student.value.trim()) // Get the trimmed value of each input
-        .filter(value => value !== ""); // Keep only non-empty strings
-
-      const start = convertTimeToNumber(startTime);
-      const end = start + sessionLength;
-
-      const sessionData = {
-        selectedDay,
-        startTime,
-        sessionLength,
-        start,
-        end,
-        roomNumber,
-        studentValues,
-      };
-
-      try {
-        const sessionMessage = await addSession(db, sessionData);
-
-        const newStudents = checkStudentInDatabase(studentList, studentValues);
-
-        for (const studentName of newStudents) {
-          const studentData = {
-            studentName,
-            iepDate: "",
-            grade: "",
-            gender: "",
-            teacher: "",
-            goalValues: [],
-          };
-          const studentMessage = await addStudent(db, studentData);
-          console.log(studentMessage);
-        }
-
-        console.log(sessionMessage);
-      } catch (error) {
-        console.error(error);
-      }
-
-      // Reload the page
-      window.location.reload();
-    }
   });
 });
