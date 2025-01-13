@@ -125,7 +125,9 @@ export function addStudent(db, studentData) {
 
     // Construct the SQL query dynamically
     const sql = `
-      INSERT INTO students (name, iep, grade, gender, teacher${goalColumns ? `, ${goalColumns}` : ""}) 
+      INSERT INTO students (name, iep, grade, gender, teacher${
+        goalColumns ? `, ${goalColumns}` : ""
+      }) 
       VALUES (?, ?, ?, ?, ?${goalPlaceholders ? `, ${goalPlaceholders}` : ""})
     `;
 
@@ -138,6 +140,48 @@ export function addStudent(db, studentData) {
         reject("Error inserting data:", err.message);
       } else {
         resolve("Insert student successful");
+      }
+    });
+  });
+}
+
+export function updateStudent(db, studentData) {
+  return new Promise((resolve, reject) => {
+    const {
+      id,
+      studentName,
+      iepDate,
+      grade,
+      gender,
+      teacher,
+      goalValues = [], // Default to an empty array if no goals are provided
+    } = studentData;
+
+    // Dynamically build the columns for the goals
+    const goalAssignments = goalValues.map((_, index) => `goal_${index + 1} = ?`).join(", ");
+
+    // Construct the SQL query dynamically
+    const sql = `
+      UPDATE students
+      SET 
+        name = ?,
+        iep = ?,
+        grade = ?,
+        gender = ?,
+        teacher = ?
+        ${goalAssignments ? `, ${goalAssignments}` : ""}
+      WHERE id = ?
+    `;
+
+    // Combine all values for placeholders
+    const values = [studentName, iepDate, grade, gender, teacher, ...goalValues, id];
+
+    // Execute the query
+    db.run(sql, values, err => {
+      if (err) {
+        reject("Error updating data: " + err.message);
+      } else {
+        resolve("Update student successful");
       }
     });
   });

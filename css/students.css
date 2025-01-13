@@ -67,7 +67,6 @@ body {
   margin-top: 66px;
 }
 
-
 .header-row,
 .student-row-top {
   display: grid;
@@ -75,6 +74,21 @@ body {
   gap: 10px;
   background-color: #f2f2f2;
   padding: 10px;
+  align-items: center;
+}
+
+.student-row-middle {
+  display: grid;
+  grid-template-columns: 7fr 1fr;
+  gap: 50px;
+  background-color: #f2f2f2;
+  padding: 0 10px 10px 10px;
+  align-items: center;
+}
+
+.student-row-middle div {
+  font-size: 12px;
+  font-style: italic;
 }
 
 .header-row {
@@ -91,7 +105,10 @@ body {
   border-bottom: 1px solid #ccc;
 }
 
-.student-row-top div, .header-row div {
+.student-row-top div,
+.header-row div,
+.student-row-middle div,
+.student-container button {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -117,20 +134,17 @@ body {
   resize: none;
   border: 1px solid lightgray;
   border-radius: 5px;
+  flex-shrink: 0;
 }
 
 .student-container:last-child {
   border-bottom: none;
 }
 
-.student-row-top .button-container {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.student-row-top .button-container button {
+.student-container button,
+.show-all {
   padding: 5px;
+  width: 100%;
   cursor: pointer;
 }
 
