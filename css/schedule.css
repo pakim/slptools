@@ -195,7 +195,7 @@ body {
   border-radius: 10px;
   width: 500px;
   height: 600px;
-  overflow: scroll;
+  overflow-y: scroll;
 }
 
 .close {
@@ -226,7 +226,18 @@ input[type="number"] {
   margin: 10px 0;
 }
 
-button#add-student, button#save-button {
+.button-container {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.button-container button {
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+button#add-student {
   margin-top: 10px;
   padding: 10px 20px;
   cursor: pointer;
@@ -234,10 +245,6 @@ button#add-student, button#save-button {
 
 button#add-student {
   margin-top: 10px;
-}
-
-button#save-button {
-  display: block;
 }
 
 .student-input {

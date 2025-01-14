@@ -68,7 +68,7 @@ export function addSession(db, sessionData) {
       start,
       end,
       roomNumber,
-      studentValues = [], // Default to an empty array if no students are provided
+      studentValues = [],
     } = sessionData;
 
     // Dynamically build the columns and placeholders for the students
@@ -110,14 +110,7 @@ export function addSession(db, sessionData) {
  */
 export function addStudent(db, studentData) {
   return new Promise((resolve, reject) => {
-    const {
-      studentName,
-      iepDate,
-      grade,
-      gender,
-      teacher,
-      goalValues = [], // Default to an empty array if no students are provided
-    } = studentData;
+    const { studentName, iepDate, grade, gender, teacher, goalValues = [] } = studentData;
 
     // Dynamically build the columns and placeholders for the students
     const goalColumns = goalValues.map((_, index) => `goal_${index + 1}`).join(", ");
@@ -145,17 +138,64 @@ export function addStudent(db, studentData) {
   });
 }
 
-export function updateStudent(db, studentData) {
+export function updateSession(db, sessionData) {
   return new Promise((resolve, reject) => {
     const {
       id,
-      studentName,
-      iepDate,
-      grade,
-      gender,
-      teacher,
-      goalValues = [], // Default to an empty array if no goals are provided
-    } = studentData;
+      selectedDay,
+      startTime,
+      sessionLength,
+      start,
+      end,
+      roomNumber,
+      studentValues = [],
+    } = sessionData;
+
+    // Dynamically build the columns for the students
+    const studentAssignments = studentValues
+      .map((_, index) => `student_${index + 1} = ?`)
+      .join(", ");
+
+    // Construct the SQL query dynamically
+    const sql = `
+      UPDATE sessions
+      SET 
+        day = ?,
+        start_time = ?,
+        session_length = ?,
+        start = ?,
+        end = ?,
+        room_number = ?
+        ${studentAssignments ? `, ${studentAssignments}` : ""}
+      WHERE id = ?
+    `;
+
+    // Combine all values for placeholders
+    const values = [
+      selectedDay,
+      startTime,
+      sessionLength,
+      start,
+      end,
+      roomNumber,
+      ...studentValues,
+      id,
+    ];
+
+    // Execute the query
+    db.run(sql, values, err => {
+      if (err) {
+        reject("Error updating data: " + err.message);
+      } else {
+        resolve("Update session successful");
+      }
+    });
+  });
+}
+
+export function updateStudent(db, studentData) {
+  return new Promise((resolve, reject) => {
+    const { id, studentName, iepDate, grade, gender, teacher, goalValues = [] } = studentData;
 
     // Dynamically build the columns for the goals
     const goalAssignments = goalValues.map((_, index) => `goal_${index + 1} = ?`).join(", ");
@@ -182,6 +222,38 @@ export function updateStudent(db, studentData) {
         reject("Error updating data: " + err.message);
       } else {
         resolve("Update student successful");
+      }
+    });
+  });
+}
+
+export function deleteSession(db, id) {
+  return new Promise((resolve, reject) => {
+    // SQL query to delete the session with the specified id
+    const sql = `DELETE FROM sessions WHERE id = ?`;
+
+    // Execute the query
+    db.run(sql, [id], err => {
+      if (err) {
+        reject(`Error deleting session: ${err.message}`);
+      } else {
+        resolve("Session deleted successfully");
+      }
+    });
+  });
+}
+
+export function deleteStudent(db, id) {
+  return new Promise((resolve, reject) => {
+    // SQL query to delete the session with the specified id
+    const sql = `DELETE FROM students WHERE id = ?`;
+
+    // Execute the query
+    db.run(sql, [id], err => {
+      if (err) {
+        reject(`Error deleting student: ${err.message}`);
+      } else {
+        resolve("Student deleted successfully");
       }
     });
   });

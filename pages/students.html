@@ -11,6 +11,8 @@
       <div class="links">
         <a class="current" href="students.html">Students</a>
         <a class="new-page" href="schedule.html">Schedule</a>
+        <a class="new-page" href="plans.html">Plans</a>
+        <a class="new-page" href="attendance.html">Attendance</a>
       </div>
       <div class="buttons">
         <button class="add">Add</button>
@@ -54,7 +56,10 @@
             <textarea type="text" class="goal" name="goals[]" rows="4" placeholder="Student's Goal"></textarea>
           </div>
           <button type="button" id="add-goal">Add Goal</button>
-          <button type="submit" id="save-button">Save</button>
+          <div class="button-container">
+            <button type="submit" id="save-button">Save</button>
+            <button id="delete-button" class="hidden">Delete</button>
+          </div>
         </div>
       </div>
     </div>

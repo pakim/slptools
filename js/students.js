@@ -4,6 +4,7 @@ import {
   fetchStudents,
   addStudent,
   updateStudent,
+  deleteStudent,
 } from "./database.js";
 
 /**
@@ -68,6 +69,19 @@ function retrieveStudentSessions(name, sessions) {
   }
 
   return studentSessions;
+}
+
+async function deleteButtonClick(db, id) {
+  const isConfirmed = confirm("Are you sure you want to delete this student?");
+
+  if (isConfirmed) {
+    // Perform the delete action
+    const message = await deleteStudent(db, id);
+    console.log(message);
+
+    // Reload the page
+    window.location.reload();
+  }
 }
 
 /**
@@ -140,6 +154,9 @@ function openModal(db, id = 0) {
   // Get the save button element
   const saveButton = document.getElementById("save-button");
 
+  // Get the delete button element
+  const deleteButton = document.getElementById("delete-button");
+
   // Change modal title to Edit Student when directed by clicking on the Edit button
   // Change modal title to Add Student when directed by clicking on Add button
   const modalTitle = document.querySelector(".modal h2");
@@ -147,9 +164,11 @@ function openModal(db, id = 0) {
   if (id === 0) {
     modalTitle.textContent = "Add Student";
     saveButton.textContent = "Save";
+    deleteButton.classList.add("hidden");
   } else {
     modalTitle.textContent = "Edit Student";
     saveButton.textContent = "Update";
+    deleteButton.classList.remove("hidden");
   }
 
   // Display the modal by changing display from hidden to flex
@@ -159,6 +178,11 @@ function openModal(db, id = 0) {
   // added everytime modal is opened.
   saveButton.onclick = () => {
     saveButtonClick(db, id);
+  };
+
+  // Set delete button click to function
+  deleteButton.onclick = () => {
+    deleteButtonClick(db, id);
   };
 }
 

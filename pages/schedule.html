@@ -11,6 +11,8 @@
       <div class="links">
         <a class="current" href="schedule.html">Schedule</a>
         <a class="new-page" href="students.html">Students</a>
+        <a class="new-page" href="plans.html">Plans</a>
+        <a class="new-page" href="attendance.html">Attendance</a>
       </div>
       <div class="buttons">
         <button class="add">Add</button>
@@ -55,7 +57,10 @@
             <input type="text" class="student" name="students[]" placeholder="Student's Name" />
           </div>
           <button type="button" id="add-student">Add Student</button>
-          <button type="submit" id="save-button">Save</button>
+          <div class="button-container">
+            <button type="submit" id="save-button">Save</button>
+            <button id="delete-button" class="hidden">Delete</button>
+          </div>
         </div>
       </div>
     </div>

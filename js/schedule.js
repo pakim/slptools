@@ -9,6 +9,8 @@ import {
   fetchStudents,
   addSession,
   addStudent,
+  updateSession,
+  deleteSession,
 } from "./database.js";
 
 /**
@@ -122,7 +124,7 @@ function checkStudentInDatabase(studentList, studentValues) {
         inDatabase = true;
       }
     });
-    if (!inDatabase) {
+    if (!inDatabase && student !== "") {
       newStudents.push(student);
     }
   });
@@ -135,7 +137,7 @@ function checkStudentInDatabase(studentList, studentValues) {
  * @param {object[]} sessions Array of session objects that contain session database data.
  * @returns {boolean} `true` if input data has no issues, otherwise `false`.
  */
-function validateSessionInfo(sessions) {
+function validateSessionInfo(sessions, id) {
   let isValid = true;
   const startTime = document.getElementById("start-time").value.trim();
   const sessionLength = parseInt(document.getElementById("session-length").value);
@@ -162,7 +164,7 @@ function validateSessionInfo(sessions) {
 
   // Display error if same day and if start and end time overlaps with an existing session's start and end time
   sessions.forEach(session => {
-    if (session.day === selectedDay) {
+    if (session.day === selectedDay && session.id !== id) {
       if (
         (session.start > start && session.start < end) ||
         (session.end > start && session.end < end) ||
@@ -178,6 +180,19 @@ function validateSessionInfo(sessions) {
   return isValid;
 }
 
+async function deleteButtonClick(db, id) {
+  const isConfirmed = confirm("Are you sure you want to delete this session?");
+
+  if (isConfirmed) {
+    // Perform the delete action
+    const message = await deleteSession(db, id);
+    console.log(message);
+
+    // Reload the page
+    window.location.reload();
+  }
+}
+
 /**
  * Adds/updates session info to the database when the save button is clicked.
  * @param {Database} db Database instance to run database queries.
@@ -186,7 +201,7 @@ function validateSessionInfo(sessions) {
  * @param {number} id Session id field in the database. 0 if adding new session.
  */
 async function saveButtonClick(db, sessions, studentList, id) {
-  if (validateSessionInfo(sessions)) {
+  if (validateSessionInfo(sessions, id)) {
     // Get modal fields
     const selectedDay = document.getElementById("day-options").value;
     const startTime = document.getElementById("start-time").value.trim();
@@ -199,11 +214,18 @@ async function saveButtonClick(db, sessions, studentList, id) {
       .map(student => student.value.trim()) // Get the trimmed value of each input
       .filter(value => value !== ""); // Keep only non-empty strings
 
+    if (id > 0) {
+      while (studentValues.length < 10) {
+        studentValues.push("");
+      }
+    }
+
     const start = convertTimeToNumber(startTime);
     const end = start + sessionLength;
 
     // Create session object to send to addSession function
     const sessionData = {
+      id,
       selectedDay,
       startTime,
       sessionLength,
@@ -219,6 +241,8 @@ async function saveButtonClick(db, sessions, studentList, id) {
         const sessionMessage = await addSession(db, sessionData);
         console.log(sessionMessage);
       } else if (id > 0) {
+        const sessionMessage = await updateSession(db, sessionData);
+        console.log(sessionMessage);
       }
 
       // Check if students in the new session are in the students table in the database
@@ -260,6 +284,9 @@ function openModal(db, sessions, studentList, id = 0) {
   // Get the save button element
   const saveButton = document.getElementById("save-button");
 
+  // Get the delete button element
+  const deleteButton = document.getElementById("delete-button");
+
   // Change modal title to Edit Session when directed by clicking on session container
   // Change modal title to Add Session when directed by clicking on Add button
   const modalTitle = document.querySelector(".modal h2");
@@ -267,9 +294,11 @@ function openModal(db, sessions, studentList, id = 0) {
   if (id === 0) {
     modalTitle.textContent = "Add Session";
     saveButton.textContent = "Save";
+    deleteButton.classList.add("hidden");
   } else {
     modalTitle.textContent = "Edit Session";
     saveButton.textContent = "Update";
+    deleteButton.classList.remove("hidden");
   }
 
   // Display the modal by changing display from hidden to flex
@@ -279,6 +308,11 @@ function openModal(db, sessions, studentList, id = 0) {
   // added everytime modal is opened.
   saveButton.onclick = () => {
     saveButtonClick(db, sessions, studentList, id);
+  };
+
+  // Set delete button click to function
+  deleteButton.onclick = () => {
+    deleteButtonClick(db, id);
   };
 }
 
